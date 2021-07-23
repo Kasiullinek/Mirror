@@ -12,7 +12,7 @@ public class PlayerNameInput : MonoBehaviour
 
     public static string DisplayName { get; private set; }
 
-    private const string PlayerPrefsNameKey = "PlayerName";
+    public const string PlayerPrefsNameKey = "PlayerName";
 
     private void Start()
     {
@@ -40,5 +40,7 @@ public class PlayerNameInput : MonoBehaviour
         DisplayName = nameInputField.text;
 
         PlayerPrefs.SetString(PlayerPrefsNameKey, DisplayName);
+        PlayerPrefs.Save();
+
     }
 }

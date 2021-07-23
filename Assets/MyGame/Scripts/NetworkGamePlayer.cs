@@ -16,7 +16,7 @@ public class NetworkGamePlayer : NetworkBehaviour
         get
         {
             if (room != null) { return room; }
-            return room = MyNetworkManager.singleton as MyNetworkManager;
+            return room = NetworkManager.singleton as MyNetworkManager;
         }
     }
 
@@ -36,5 +36,5 @@ public class NetworkGamePlayer : NetworkBehaviour
     {
         this.displayName = displayName;
     }
-    
+
 }

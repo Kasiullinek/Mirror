@@ -5,11 +5,14 @@ using System.Linq;
 
 public class PlayerSpawnSystem : NetworkBehaviour
 {
-    [SerializeField] private GameObject playerPrefab = null;
 
     private static List<Transform> spawnPoints = new List<Transform>();
 
     private int nextIndex = 0;
+
+    public Character[] characters = default;
+
+    private int characterIndex = 1;
 
     public static void AddSpawnPoint(Transform transform)
     {
@@ -28,8 +31,18 @@ public class PlayerSpawnSystem : NetworkBehaviour
         MyNetworkManager.OnServerReadied += SpawnPlayer;
     }
 
+    public override void OnStartClient()
+    {
+        InputManager.Add(ActionMapNames.Player);
+        InputManager.Controls.Player.Look.Enable();
+    }
+
     [ServerCallback]
     private void OnDestroy()
+    {
+        MyNetworkManager.OnServerReadied -= SpawnPlayer;
+    }
+    public override void OnStopClient()
     {
         MyNetworkManager.OnServerReadied -= SpawnPlayer;
     }
@@ -45,7 +58,11 @@ public class PlayerSpawnSystem : NetworkBehaviour
             return;
         }
 
-        GameObject playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
+        characterIndex = PlayerPrefs.GetInt("PlayerIndex");
+
+        Debug.Log("Character Index: " + characterIndex);
+
+        GameObject playerInstance = Instantiate(characters[characterIndex].GameplayCharacterPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
         NetworkServer.Spawn(playerInstance, conn);
 
         nextIndex++;

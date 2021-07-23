@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using Cinemachine;
 using Inputs;
+using System.Collections;
 
 public class PlayerCameraContoroller : NetworkBehaviour
 {
@@ -11,7 +10,9 @@ public class PlayerCameraContoroller : NetworkBehaviour
     [SerializeField] private Vector2 maxFollowOffset = new Vector2(-1f, 6f);
     [SerializeField] private Vector2 cameraVelocity = new Vector2(4f, 025f);
     [SerializeField] private Transform playerTransform = null;
-    [SerializeField] private CinemachineVirtualCamera virtualCamera = null;
+
+    public CinemachineVirtualCamera virtualCameraFirstView = null;
+    public CinemachineVirtualCamera virtualCameraThirdView = null;
 
     private Controls controls;
     private Controls Controls
@@ -23,13 +24,24 @@ public class PlayerCameraContoroller : NetworkBehaviour
         }
     }
 
-    private CinemachineTransposer transposer;
+    private CinemachineTransposer transposerFirstView;
+    private IEnumerator WaitForFourSeconds()
+    {
+        yield return new WaitForSeconds(4);
+
+        virtualCameraFirstView.gameObject.SetActive(true);
+        virtualCameraThirdView.gameObject.SetActive(false);
+
+        StopCoroutine("WaitForFourSeconds");
+    }
 
     public override void OnStartAuthority()
     {
-        transposer = virtualCamera.GetCinemachineComponent<CinemachineTransposer>();
+        transposerFirstView = virtualCameraFirstView.GetCinemachineComponent<CinemachineTransposer>();
 
-        virtualCamera.gameObject.SetActive(true);
+        virtualCameraThirdView.gameObject.SetActive(true);
+
+        StartCoroutine("WaitForFourSeconds");
 
         enabled = true;
 
@@ -50,12 +62,9 @@ public class PlayerCameraContoroller : NetworkBehaviour
 
     private void Look(Vector2 lookAxis)
     {
-        float deltaTime = Time.deltaTime;
-
-        float followOffset = Mathf.Clamp(transposer.m_FollowOffset.y - (lookAxis.y * cameraVelocity.y * deltaTime), maxFollowOffset.x, maxFollowOffset.y);
-
-        transposer.m_FollowOffset.y = followOffset;
-
-        playerTransform.Rotate(0f, lookAxis.x * cameraVelocity.x * deltaTime, 0f);
+         float deltaTime = Time.deltaTime;
+         float followOffset = Mathf.Clamp(transposerFirstView.m_FollowOffset.y - (lookAxis.y * cameraVelocity.y * deltaTime), maxFollowOffset.x, maxFollowOffset.y);
+         transposerFirstView.m_FollowOffset.y = followOffset;
+         playerTransform.Rotate(0f, lookAxis.x * cameraVelocity.x * deltaTime, 0f);
     }
 }

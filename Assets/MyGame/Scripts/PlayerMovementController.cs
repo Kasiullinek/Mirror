@@ -8,38 +8,16 @@ public class PlayerMovementController : NetworkBehaviour
 {
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private CharacterController controller = null;
+    [SerializeField] private Animator animator = null;
 
     private Vector2 previousInput;
-
-    private Controls controls;
-
-    private Controls Controls
-    {
-        get
-        {
-            if (controls != null) { return controls; }
-            return controls = new Controls();
-        }
-    }
 
     public override void OnStartAuthority()
     {
         enabled = true;
 
-        Controls.Player.Move.performed += ctx => SetMovement(ctx.ReadValue<Vector2>());
-        Controls.Player.Move.canceled += ctx => ResetMovement();
-    }
-
-    [ClientCallback]
-    private void OnEnable()
-    {
-        Controls.Enable();
-    }
-
-    [ClientCallback]
-    private void OnDisable()
-    {
-        Controls.Disable();
+        InputManager.Controls.Player.Move.performed += ctx => SetMovement(ctx.ReadValue<Vector2>());
+        InputManager.Controls.Player.Move.canceled += ctx => ResetMovement();
     }
 
     [ClientCallback]
@@ -71,5 +49,7 @@ public class PlayerMovementController : NetworkBehaviour
 
         Vector3 movement = right.normalized * previousInput.x + forward.normalized * previousInput.y;
         controller.Move(movement * movementSpeed * Time.deltaTime);
+
+        animator.SetBool("IsWalking", controller.velocity.magnitude > 0.2f);
     }
 }

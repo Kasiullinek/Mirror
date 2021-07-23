@@ -10,7 +10,7 @@ public class NetworkRoomPlayer : NetworkBehaviour
     [Header("UI")]
     [SerializeField] private GameObject lobbyUI = null;
     [SerializeField] private TMP_Text[] playerNameTexts = new TMP_Text[4];
-    [SerializeField] private TMP_Text[] playerReadTexts = new TMP_Text[4];
+    [SerializeField] private TMP_Text[] playerReadyTexts = new TMP_Text[4];
     [SerializeField] private Button startGameButton = null;
 
     [SyncVar(hook = nameof(HandleDisplayNameChanged))]
@@ -36,7 +36,7 @@ public class NetworkRoomPlayer : NetworkBehaviour
         get
         {
             if (room != null) { return room; }
-            return room = MyNetworkManager.singleton as MyNetworkManager;
+            return room = NetworkManager.singleton as MyNetworkManager;
         }
     }
 
@@ -55,6 +55,7 @@ public class NetworkRoomPlayer : NetworkBehaviour
     public override void OnStopClient()
     {
         Room.RoomPlayer.Remove(this);
+
         UpdateDisplay();
     }
 
@@ -79,13 +80,13 @@ public class NetworkRoomPlayer : NetworkBehaviour
         for(int i = 0; i < playerNameTexts.Length; i++)
         {
             playerNameTexts[i].text = "Waiting For Player...";
-            playerReadTexts[i].text = string.Empty;
+            playerReadyTexts[i].text = string.Empty;
         }
 
         for(int i = 0; i < Room.RoomPlayer.Count; i++)
         {
             playerNameTexts[i].text = Room.RoomPlayer[i].DisplayName;
-            playerReadTexts[i].text = Room.RoomPlayer[i].IsReady ? "<color=green>Ready</color>" : "<color=red>Not Ready</color>";
+            playerReadyTexts[i].text = Room.RoomPlayer[i].IsReady ? "<color=green>Ready</color>" : "<color=red>Not Ready</color>";
         }
     }
 

@@ -16,10 +16,12 @@ public class MyNetworkManager : NetworkManager
     [Header("Game")]
     [SerializeField] private NetworkGamePlayer gamePlayerPrefab = null;
     [SerializeField] private GameObject playerSpawnSystem = null;
+    [SerializeField] private GameObject roundSystem = null;
 
     public static event Action OnClientConnected;
     public static event Action OnClientDisconnected;
     public static event Action<NetworkConnection> OnServerReadied;
+    public static event Action OnServerStopped;
 
     public List<NetworkRoomPlayer> RoomPlayer { get; } = new List<NetworkRoomPlayer>();
     public List<NetworkGamePlayer> GamePlayer { get; } = new List<NetworkGamePlayer>();
@@ -36,6 +38,7 @@ public class MyNetworkManager : NetworkManager
         foreach(var prefab in spawnablePrefabs)
         {
             ClientScene.RegisterPrefab(prefab);
+
         }
     }
 
@@ -85,9 +88,8 @@ public class MyNetworkManager : NetworkManager
         if(conn.identity != null)
         {
             var player = conn.identity.GetComponent<NetworkRoomPlayer>();
-
+         
             RoomPlayer.Remove(player);
-
             NotifyPlayersOfReadyState();
         }
 
@@ -96,7 +98,10 @@ public class MyNetworkManager : NetworkManager
 
     public override void OnStopServer()
     {
+        OnServerStopped?.Invoke();
+
         RoomPlayer.Clear();
+        GamePlayer.Clear();
     }
 
     public void NotifyPlayersOfReadyState()
@@ -154,7 +159,11 @@ public class MyNetworkManager : NetworkManager
         {
             GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);
             NetworkServer.Spawn(playerSpawnSystemInstance);
+
+            GameObject roundSystemInstance = Instantiate(roundSystem);
+            NetworkServer.Spawn(roundSystemInstance);
         }
+
     }
     public override void OnServerReady(NetworkConnection conn)
     {
